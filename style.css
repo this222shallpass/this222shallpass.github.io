@@ -14,8 +14,13 @@
   --accent: #d8402f;
 
   --size: 12.5px;
-  --lead: 1.45;
+  --lead: 1.5;
   --gap: 22px;
+
+  /* cjk glyphs fill the em box where latin only reaches x-height, so the
+     same px size reads noticeably larger. shave the japanese a touch so
+     the two languages look like one size. */
+  --ja-scale: 0.95;
 }
 
 * { box-sizing: border-box; }
@@ -28,9 +33,16 @@ html, body {
 body {
   background: var(--paper);
   color: var(--ink);
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  /* one stack for both languages: latin glyphs always come from Helvetica
+     and only the cjk falls through to Hiragino. keeps every roman word —
+     dates, the email, acc8f1 — identical across the switch. */
+  font-family: "Helvetica Neue", Helvetica, Arial,
+               "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
   font-size: var(--size);
-  line-height: var(--lead);
+  /* an absolute line box, not a ratio: japanese renders 5% smaller but the
+     lines still land on exactly the same baselines, so a long list does not
+     creep out of alignment when the language flips */
+  line-height: calc(var(--size) * var(--lead));
   letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
@@ -38,10 +50,10 @@ body {
   padding-bottom: 90px;
 }
 
-/* japanese needs a touch more air */
+/* the only thing japanese changes is the optical size — same family, same
+   leading, so nothing reflows vertically when you flip the toggle */
 html[lang="ja"] body {
-  font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Helvetica Neue", sans-serif;
-  line-height: 1.7;
+  font-size: calc(var(--size) * var(--ja-scale));
 }
 
 /* ---- the background drawing ------------------------------------- */
@@ -104,7 +116,7 @@ header {
 }
 
 h1 {
-  font-size: var(--size);
+  font-size: var(--size); /* pinned — the masthead must not move on switch */
   font-weight: 400;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -130,7 +142,7 @@ nav a[aria-current="page"] { border-bottom-color: var(--ink); color: var(--ink);
 .col > * + * { margin-top: 1.6em; }
 
 h2 {
-  font-size: var(--size);
+  font-size: 1em;
   font-weight: 400;
   letter-spacing: 0.1em;
   text-transform: uppercase;
