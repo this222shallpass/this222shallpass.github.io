@@ -831,7 +831,7 @@
 <path d="M465 442L496 224" stroke-width="3.3"/>
 <path d="M350 598L238 478" stroke-width="2.5"/>
 </g>
-<rect x="529" y="342" width="14" height="14" fill="#d8402f"/>
-<rect x="702" y="619" width="14" height="14" fill="#d8402f"/>
-<circle cx="685" cy="960" r="11" fill="none" stroke="#d8402f" stroke-width="1.2"/>
+<rect x="529" y="342" width="14" height="14" fill="#4aa3dc"/>
+<rect x="702" y="619" width="14" height="14" fill="#4aa3dc"/>
+<circle cx="685" cy="960" r="11" fill="none" stroke="#4aa3dc" stroke-width="1.2"/>
 </svg>

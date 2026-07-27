@@ -776,7 +776,7 @@
 <path d="M460 775L227 612" stroke-width="2.2"/>
 <path d="M286 594L429 654" stroke-width="2.4"/>
 </g>
-<rect x="683" y="847" width="14" height="14" fill="#d8402f"/>
-<rect x="447" y="944" width="14" height="14" fill="#d8402f"/>
-<circle cx="521" cy="515" r="11" fill="none" stroke="#d8402f" stroke-width="1.2"/>
+<rect x="683" y="847" width="14" height="14" fill="#4aa3dc"/>
+<rect x="447" y="944" width="14" height="14" fill="#4aa3dc"/>
+<circle cx="521" cy="515" r="11" fill="none" stroke="#4aa3dc" stroke-width="1.2"/>
 </svg>
