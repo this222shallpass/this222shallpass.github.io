@@ -105,6 +105,10 @@ h1 {
   margin: 0 0 4px;
 }
 
+/* parked: still in the markup, just not shown yet.
+   delete the class from the element to bring a section back. */
+.wip { display: none; }
+
 h2 {
   font-size: 1em;
   font-weight: 400;
