@@ -12,7 +12,7 @@
   --ink: #111111;
   --ink-soft: #6b6b6b;
   --rule: #d8d5cf;
-  --accent: #d8402f;
+  --accent: #acc8f1;
 
   --size: 12.5px;
   --lead: 1.5;
@@ -94,8 +94,11 @@ a:hover { border-bottom-color: var(--ink); }
   font-size: 0.9em;
 }
 
+h1:hover { color: var(--accent); }
+
 h1 {
   font-size: var(--size); /* pinned — the masthead must not move on switch */
+  transition: color 0.18s ease;
   font-weight: 400;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -120,14 +123,15 @@ p { margin: 0 0 0.9em; max-width: 34em; }
   right: var(--gap);
   z-index: 30;
   font: inherit;
-  background: var(--paper);
-  border: 1px solid var(--ink);
-  border-radius: 999px;
-  padding: 3px 11px 4px;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--ink);
   cursor: pointer;
   letter-spacing: 0.04em;
+  transition: color 0.18s ease;
 }
-#lang:hover { background: var(--ink); color: var(--paper); }
+#lang:hover { color: var(--accent); }
 
 html[lang="en"] .ja,
 html[lang="ja"] .en { display: none !important; }
@@ -314,7 +318,7 @@ footer .mark { color: var(--accent); }
   h1 { margin-bottom: 6px; }
   nav a { margin-right: 12px; line-height: 2; }
 
-  #lang { top: auto; bottom: 12px; right: var(--gap); padding: 5px 13px 6px; }
+  #lang { top: auto; bottom: 12px; right: var(--gap); }
 
   footer { position: static; margin-top: 40px; display: block; }
 

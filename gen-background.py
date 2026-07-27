@@ -22,7 +22,7 @@ MARGIN = 46
 INK = "#1a1a1a"
 GHOST = "#c2748c"      # "was here" construction lines
 AXIS = "#7d93c4"       # shift-in-axis marks
-ACCENT = "#4aa3dc"     # accent squares / circle in the drawings
+ACCENT = "#acc8f1"     # accent squares / circle in the drawings
 
 
 class Drawing:
