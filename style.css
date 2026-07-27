@@ -1,0 +1,267 @@
+/* ------------------------------------------------------------------
+   acc8f1 — this222shallpass
+   one stylesheet for every page. keep it small.
+   ------------------------------------------------------------------ */
+
+:root {
+  /* swap this one line to change the background drawing */
+  --bg-image: url("images/bg-placeholder.svg");
+
+  --paper: #fbfaf8;
+  --ink: #111111;
+  --ink-soft: #6b6b6b;
+  --rule: #d8d5cf;
+  --accent: #d8402f;
+
+  --size: 12.5px;
+  --lead: 1.45;
+  --gap: 22px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: var(--size);
+  line-height: var(--lead);
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding: var(--gap);
+  padding-bottom: 90px;
+}
+
+/* japanese needs a touch more air */
+html[lang="ja"] body {
+  font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Helvetica Neue", sans-serif;
+  line-height: 1.7;
+}
+
+/* ---- the background drawing ------------------------------------- */
+
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--bg-image);
+  background-repeat: no-repeat;
+  background-position: 68% 100%;
+  background-size: auto 88%;
+  opacity: 0.5;
+  filter: grayscale(1) contrast(0.9);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* ---- links ------------------------------------------------------- */
+
+a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+a:hover { border-bottom-color: var(--ink); }
+
+.arrow::before {
+  content: "↗";
+  display: inline-block;
+  margin-right: 5px;
+  font-size: 0.9em;
+}
+
+/* ---- language toggle --------------------------------------------- */
+
+#lang {
+  position: fixed;
+  top: var(--gap);
+  right: var(--gap);
+  z-index: 10;
+  font: inherit;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  padding: 3px 11px 4px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+}
+#lang:hover { background: var(--ink); color: var(--paper); }
+
+/* !important so a later layout rule can never un-hide the wrong language */
+html[lang="en"] .ja,
+html[lang="ja"] .en { display: none !important; }
+
+/* ---- page frame --------------------------------------------------- */
+
+header {
+  margin-bottom: 30px;
+}
+
+h1 {
+  font-size: var(--size);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0 0 4px;
+}
+
+nav {
+  margin-top: 3px;
+  color: var(--ink-soft);
+}
+nav a { margin-right: 14px; }
+nav a[aria-current="page"] { border-bottom-color: var(--ink); color: var(--ink); }
+
+/* columns — collapse to one on small screens */
+
+.cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 40px;
+  max-width: 1100px;
+}
+
+.col > * + * { margin-top: 1.6em; }
+
+h2 {
+  font-size: var(--size);
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0 0 0.5em;
+  color: var(--ink);
+}
+
+p { margin: 0 0 0.9em; max-width: 34em; }
+
+/* numbered index list, like a table of works */
+
+ol.index {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+ol.index li {
+  display: flex;
+  gap: 10px;
+}
+ol.index .n {
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+
+dl.meta {
+  display: grid;
+  grid-template-columns: 6.5em minmax(0, 1fr);
+  gap: 2px 12px;
+  margin: 0;
+}
+dl.meta dt { color: var(--ink-soft); }
+dl.meta dd { margin: 0; overflow-wrap: anywhere; }
+
+/* ---- days --------------------------------------------------------- */
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 26px 22px;
+  max-width: 1100px;
+  margin-top: 6px;
+}
+
+.days figure { margin: 0; }
+
+.days img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: grayscale(1) contrast(0.95);
+  transition: filter 0.25s ease;
+}
+.days a:hover img { filter: none; }
+.days a { border-bottom: none; }
+
+.days figcaption {
+  margin-top: 6px;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.days figcaption .note { color: var(--ink); display: block; }
+
+.empty { color: var(--ink-soft); }
+
+/* ---- footer ------------------------------------------------------- */
+
+footer {
+  position: fixed;
+  left: var(--gap);
+  right: var(--gap);
+  bottom: 14px;
+  padding-top: 8px;
+  border-top: 1px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink-soft);
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+footer .mark { color: var(--accent); }
+
+/* ---- narrow desktop / tablet ---------------------------------------- */
+
+@media (max-width: 1000px) and (min-width: 721px) {
+  .cols { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px; }
+}
+
+/* ---- mobile -------------------------------------------------------- */
+
+@media (max-width: 720px) {
+  :root { --size: 13.5px; --gap: 16px; }
+
+  body { padding-bottom: 72px; }
+
+  .cols {
+    grid-template-columns: 1fr;
+    gap: 26px;
+  }
+
+  /* stacked sections get a hairline between them */
+  .col + .col {
+    border-top: 1px solid var(--rule);
+    padding-top: 22px;
+  }
+
+  .bg {
+    background-position: 55% 100%;
+    background-size: auto 62%;
+    opacity: 0.32;
+  }
+
+  header { margin-bottom: 24px; }
+  h1 { margin-bottom: 6px; }
+  nav a { margin-right: 12px; line-height: 2; }
+
+  #lang { top: auto; bottom: 12px; right: var(--gap); padding: 5px 13px 6px; }
+
+  footer {
+    position: static;
+    margin-top: 40px;
+    display: block;
+  }
+  footer > * + * { margin-top: 4px; }
+
+  .days { grid-template-columns: repeat(2, 1fr); gap: 18px 12px; }
+  dl.meta { grid-template-columns: 1fr; gap: 0 0; }
+  dl.meta dt { margin-top: 8px; }
+}
+
+@media (max-width: 330px) {
+  .days { grid-template-columns: 1fr; }
+}

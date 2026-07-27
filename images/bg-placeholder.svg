@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1400" width="900" height="1400">
+  <!-- placeholder background drawing.
+       replace by pointing the bg-image variable in style.css at your own file. -->
+  <g fill="none" stroke="#1a1a1a" stroke-width="0.9" stroke-linecap="round">
+
+    <!-- construction grid, very faint -->
+    <g stroke-width="0.4" opacity="0.35">
+      <path d="M0 250H900M0 470H900M0 690H900M0 910H900M0 1130H900"/>
+      <path d="M180 0V1400M420 0V1400M660 0V1400"/>
+    </g>
+
+    <!-- ray bundle converging on the hub -->
+    <g stroke-width="0.5" opacity="0.8">
+      <path d="M0 600L500 610"/>
+      <path d="M0 618L500 610"/>
+      <path d="M0 636L500 610"/>
+      <path d="M0 654L500 610"/>
+      <path d="M0 672L500 610"/>
+    </g>
+
+    <!-- hub -->
+    <circle cx="500" cy="610" r="46"/>
+    <circle cx="500" cy="610" r="27"/>
+    <circle cx="512" cy="668" r="34"/>
+    <circle cx="512" cy="668" r="6" fill="#1a1a1a" stroke="none"/>
+    <circle cx="500" cy="610" r="5" fill="#1a1a1a" stroke="none"/>
+
+    <!-- pulleys upper left -->
+    <circle cx="150" cy="390" r="45"/>
+    <circle cx="150" cy="390" r="4" fill="#1a1a1a" stroke="none"/>
+    <path d="M105 382H195M105 398H195"/>
+    <circle cx="160" cy="640" r="42"/>
+    <path d="M118 632H202M118 648H202"/>
+    <path d="M150 1160H32" stroke-width="0.6"/>
+    <circle cx="30" cy="1160" r="38"/>
+    <path d="M-8 1152H68M-8 1168H68"/>
+
+    <!-- triangulation, dashed -->
+    <g stroke-dasharray="7 6" stroke-width="0.7">
+      <path d="M150 390L470 300"/>
+      <path d="M150 390L120 690"/>
+      <path d="M120 690L470 300"/>
+      <path d="M30 1160L182 1042L182 660"/>
+      <path d="M0 830L360 900"/>
+    </g>
+
+    <!-- heavy gestural strokes, upper right -->
+    <g stroke-width="4.5" stroke-linecap="butt">
+      <path d="M596 262l52 74"/>
+      <path d="M648 336l44-52"/>
+      <path d="M692 284l48 66"/>
+      <path d="M596 700l30 56"/>
+      <path d="M646 742l38-40"/>
+      <path d="M700 660l34 62"/>
+    </g>
+
+    <!-- long thin sweeps -->
+    <path d="M470 60C540 240 560 420 520 590" stroke-width="1.2"/>
+    <path d="M636 96C700 300 716 480 690 604" stroke-width="1.2"/>
+    <path d="M754 250C812 420 820 560 786 672" stroke-width="1.2"/>
+
+    <!-- dotted boundary -->
+    <g stroke-dasharray="1.5 9" stroke-width="2.2">
+      <path d="M340 880C470 780 640 800 760 890C860 964 840 1080 720 1120"/>
+      <path d="M410 1010C500 960 610 968 668 1020"/>
+    </g>
+
+    <!-- verticals with node points -->
+    <g>
+      <path d="M300 900V1330"/>
+      <path d="M340 940V1290"/>
+      <path d="M182 1020V1340"/>
+      <path d="M120 700V1140"/>
+    </g>
+    <g fill="none">
+      <circle cx="300" cy="1180" r="7"/>
+      <circle cx="300" cy="1330" r="7"/>
+      <circle cx="340" cy="1120" r="7"/>
+      <circle cx="182" cy="1340" r="7"/>
+      <circle cx="120" cy="1140" r="7"/>
+      <circle cx="378" cy="1234" r="7"/>
+    </g>
+
+    <!-- flat bars / sections -->
+    <g stroke-width="1">
+      <path d="M362 826V944"/>
+      <path d="M370 826V944"/>
+      <path d="M470 1024V1136"/>
+      <path d="M478 1024V1136"/>
+    </g>
+
+    <!-- crosshair registration marks -->
+    <g stroke-width="0.8">
+      <path d="M566 224v22M555 235h22"/>
+      <path d="M262 592v22M251 603h22"/>
+      <path d="M700 1090v22M689 1101h22"/>
+      <path d="M430 1310v22M419 1321h22"/>
+    </g>
+
+    <!-- arc fan, lower right -->
+    <g stroke-width="0.7">
+      <path d="M660 1250a170 170 0 0 1 170-170"/>
+      <path d="M660 1250a140 140 0 0 1 140-140"/>
+      <path d="M660 1250a110 110 0 0 1 110-110"/>
+      <path d="M660 1250a80 80 0 0 1 80-80"/>
+      <path d="M660 1250h240M660 1250V1010"/>
+    </g>
+  </g>
+
+  <!-- the two red squares -->
+  <rect x="398" y="46" width="20" height="20" fill="#d8402f"/>
+  <rect x="438" y="1218" width="20" height="20" fill="#d8402f"/>
+
+  <!-- washes -->
+  <rect x="0" y="0" width="330" height="620" fill="#8ea0b8" opacity="0.07"/>
+  <rect x="0" y="1230" width="180" height="170" fill="#5a5a5a" opacity="0.12"/>
+</svg>
