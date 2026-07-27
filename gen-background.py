@@ -1,237 +1,369 @@
 #!/usr/bin/env python3
 """
-Background drawing: a brutalist complex from above, exploded along a
-diagonal axis. Almost entirely hairline construction geometry, with a
-few very bold strokes and arcs carrying the contrast.
-Portrait 900x1400.
+Generates the background drawings: a brutalist complex in exploded
+axonometric. Each volume is drawn twice — a ghost outline at its
+original position and the piece itself where it has shifted to — tied
+together by hairline leaders. Circles project to ellipses, stairs climb
+in z, and a few bold screen-space arcs carry the contrast.
+
+    python3 gen-background.py            # all 8 variants
+    python3 gen-background.py 3          # just variant 3
+
+Variants differ in view angle, seed and arrangement. Output: images/bg-NN.svg
 """
 import math
 import random
+import sys
+import os
 
-W, H = 900, 1400
+SHEET_W, SHEET_H = 900, 1400
+MARGIN = 46
+
 INK = "#1a1a1a"
-random.seed(11)
-out = []
-add = out.append
+GHOST = "#c2748c"      # "was here" construction lines
+AXIS = "#7d93c4"       # shift-in-axis marks
+ACCENT = "#d8402f"
 
 
-def esc(**kw):
-    return " ".join(f'{k.replace("_", "-")}="{v}"' for k, v in kw.items())
+class Drawing:
+    def __init__(self, ax, ay, seed):
+        self.ax, self.ay = math.radians(ax), math.radians(ay)
+        self.rng = random.Random(seed)
+        self.parts = []
+        self.pts = []
+
+    # ---------------------------------------------------------- projection
+    def p(self, x, y, z=0.0, rec=True):
+        """Project a world point. rec=False keeps it out of the fit bounds —
+        for lines that are meant to run off the edge of the sheet."""
+        X = x * math.cos(self.ax) - y * math.cos(self.ay)
+        Y = x * math.sin(self.ax) + y * math.sin(self.ay) - z
+        if rec:
+            self.pts.append((X, Y))
+        return X, Y
+
+    # -------------------------------------------------------------- output
+    def emit(self, s):
+        self.parts.append(s)
+
+    def poly(self, pts, w=0.4, color=INK, close=True, dash=None, op=None, cap="round"):
+        d = "M" + "L".join(f"{x:.1f} {y:.1f}" for x, y in pts) + ("Z" if close else "")
+        a = (f'<path d="{d}" fill="none" stroke="{color}" stroke-width="{w}" '
+             f'stroke-linecap="{cap}"')
+        if dash:
+            a += f' stroke-dasharray="{dash}"'
+        if op is not None:
+            a += f' opacity="{op}"'
+        self.emit(a + "/>")
+
+    def seg(self, a, b, w=0.4, **kw):
+        self.poly([a, b], w, close=False, **kw)
+
+    def dot(self, pt, r=1.6, color=INK, op=1.0):
+        self.emit(f'<circle cx="{pt[0]:.1f}" cy="{pt[1]:.1f}" r="{r}" fill="{color}" '
+                  f'stroke="none" opacity="{op}"/>')
+
+    def fill(self, pts, color, op):
+        d = "M" + "L".join(f"{x:.1f} {y:.1f}" for x, y in pts) + "Z"
+        self.emit(f'<path d="{d}" fill="{color}" stroke="none" opacity="{op}"/>')
+
+    # ---------------------------------------------------------- primitives
+    def slab(self, ox, oy, w, d, z, h, hatch=7, ghost_at=None, sw=0.55):
+        """A volume: hatched top, the two visible sides, hard edges."""
+        top = [self.p(ox, oy, z + h), self.p(ox + w, oy, z + h),
+               self.p(ox + w, oy + d, z + h), self.p(ox, oy + d, z + h)]
+        self.fill(top, "#ffffff", 0.62)
+        self.poly(top, sw)
+
+        if h > 0:
+            front = [self.p(ox, oy + d, z + h), self.p(ox + w, oy + d, z + h),
+                     self.p(ox + w, oy + d, z), self.p(ox, oy + d, z)]
+            side = [self.p(ox + w, oy, z + h), self.p(ox + w, oy + d, z + h),
+                    self.p(ox + w, oy + d, z), self.p(ox + w, oy, z)]
+            for face in (front, side):
+                self.fill(face, "#ffffff", 0.5)
+                self.poly(face, sw * 0.8)
+            self.fill(side, INK, 0.05)
+            # shutter lines down the front face
+            for k in range(1, 6):
+                t = k / 6
+                self.seg(self.p(ox + w * t, oy + d, z + h),
+                         self.p(ox + w * t, oy + d, z), 0.25)
+
+        if hatch:
+            for k in range(1, hatch + 1):
+                t = k / (hatch + 1)
+                self.seg(self.p(ox + 2, oy + d * t, z + h),
+                         self.p(ox + w - 2, oy + d * t, z + h), 0.28)
+
+        if ghost_at:
+            gx, gy = ghost_at
+            g = [self.p(gx, gy, 0), self.p(gx + w, gy, 0),
+                 self.p(gx + w, gy + d, 0), self.p(gx, gy + d, 0)]
+            self.poly(g, 0.3, GHOST, dash="4 4", op=0.55)
+            for a, b in zip(top, g):
+                self.seg(a, b, 0.28, color=GHOST, dash="2 6", op=0.5)
+
+    def court(self, ox, oy, w, d, z):
+        self.poly([self.p(ox, oy, z), self.p(ox + w, oy, z),
+                   self.p(ox + w, oy + d, z), self.p(ox, oy + d, z)], 0.45)
+
+    def stair(self, ox, oy, n, run, wide, rise, z=0.0, along="x"):
+        """A flight climbing in z."""
+        for k in range(n + 1):
+            t, zz = k * run, z + k * rise
+            if along == "x":
+                a, b = self.p(ox + t, oy, zz), self.p(ox + t, oy + wide, zz)
+                self.seg(a, b, 0.42)
+                if k < n:
+                    self.seg(a, self.p(ox + t, oy, zz + rise), 0.3)
+                    self.seg(b, self.p(ox + t, oy + wide, zz + rise), 0.3)
+            else:
+                a, b = self.p(ox, oy + t, zz), self.p(ox + wide, oy + t, zz)
+                self.seg(a, b, 0.42)
+                if k < n:
+                    self.seg(a, self.p(ox, oy + t, zz + rise), 0.3)
+                    self.seg(b, self.p(ox + wide, oy + t, zz + rise), 0.3)
+        if along == "x":
+            self.seg(self.p(ox, oy, z), self.p(ox + n * run, oy, z + n * rise), 0.5)
+            self.seg(self.p(ox, oy + wide, z),
+                     self.p(ox + n * run, oy + wide, z + n * rise), 0.5)
+        else:
+            self.seg(self.p(ox, oy, z), self.p(ox, oy + n * run, z + n * rise), 0.5)
+            self.seg(self.p(ox + wide, oy, z),
+                     self.p(ox + wide, oy + n * run, z + n * rise), 0.5)
+
+    def ring(self, cx, cy, r, z=0.0, w=0.4, color=INK, dash=None, op=None, n=72):
+        pts = [self.p(cx + r * math.cos(2 * math.pi * k / n),
+                      cy + r * math.sin(2 * math.pi * k / n), z) for k in range(n + 1)]
+        self.poly(pts, w, color, close=False, dash=dash, op=op)
+
+    def radial(self, cx, cy, r0, r1, n, z=0.0, w=0.28):
+        for k in range(n):
+            a = 2 * math.pi * k / n
+            self.seg(self.p(cx + r0 * math.cos(a), cy + r0 * math.sin(a), z),
+                     self.p(cx + r1 * math.cos(a), cy + r1 * math.sin(a), z), w)
+
+    def sine_path(self, x0, x1, y0, amp, wavelen, z=0.0, w=0.45, phase=0.0, dash=None):
+        n = 120
+        pts = []
+        for k in range(n + 1):
+            x = x0 + (x1 - x0) * k / n
+            pts.append(self.p(x, y0 + amp * math.sin(x / wavelen * 2 * math.pi + phase), z))
+        self.poly(pts, w, close=False, dash=dash)
+
+    def wall(self, x0, y0, x1, y1, h, z=0.0):
+        q = [self.p(x0, y0, z), self.p(x1, y1, z),
+             self.p(x1, y1, z + h), self.p(x0, y0, z + h)]
+        self.fill(q, "#ffffff", 0.45)
+        self.poly(q, 0.45)
+
+    def cross(self, pt, s=7, w=0.45, color=INK):
+        self.seg((pt[0] - s, pt[1]), (pt[0] + s, pt[1]), w, color=color)
+        self.seg((pt[0], pt[1] - s), (pt[0], pt[1] + s), w, color=color)
 
 
-def line(x1, y1, x2, y2, w=0.4, **kw):
-    add(f'<path d="M{x1:.1f} {y1:.1f}L{x2:.1f} {y2:.1f}" stroke-width="{w}" {esc(**kw)}/>')
+# ===========================================================================
+def build(v):
+    d = Drawing(v["ax"], v["ay"], v["seed"])
+    rng = d.rng
+    G, n = v["grid"], v["gridn"]
+    span = n * G
+
+    # the ground grid is clipped to the same diagonal band as the buildings —
+    # a full square grid would project to a wide diamond and flatten everything
+    bw = v["band"] * G
+
+    def clamp(a):
+        return max(0.0, min(span, a))
+
+    for i in range(n + 1):
+        t = i * G
+        d.seg(d.p(clamp(t - bw), t), d.p(clamp(t + bw), t), 0.22, op=0.4, dash="9 7")
+        d.seg(d.p(t, clamp(t - bw)), d.p(t, clamp(t + bw)), 0.22, op=0.4, dash="9 7")
+
+    placed = []
+    for (cx, cy, w, dp, z, h, sh) in v["slabs"]:
+        ghost = (cx - sh[0], cy - sh[1]) if sh else None
+        d.slab(cx, cy, w, dp, z, h, hatch=v["hatch"], ghost_at=ghost)
+        placed.append((cx, cy, w, dp, z, h))
+        if w > 120 and dp > 90 and rng.random() < 0.7:
+            d.court(cx + w * 0.28, cy + dp * 0.28, w * 0.4, dp * 0.4, z + h)
+
+    for (cx, cy, w, dp, z, h) in placed[:3]:
+        if w < 110:
+            continue
+        for i in range(3):
+            for j in range(2):
+                x, y = cx + w * (0.22 + i * 0.26), cy + dp * (0.28 + j * 0.34)
+                d.poly([d.p(x, y, z + h), d.p(x + 12, y, z + h),
+                        d.p(x + 12, y + 12, z + h), d.p(x, y + 12, z + h)], 0.35)
+
+    for s in v["stairs"]:
+        d.stair(*s)
+    for w_ in v["walls"]:
+        d.wall(*w_)
+
+    for (cx, cy, r, z) in v["rings"]:
+        d.ring(cx, cy, r, z, 0.5)
+        d.ring(cx, cy, r * 0.62, z, 0.32)
+        d.ring(cx, cy, r * 1.3, z, 0.28, dash="2 7")
+        d.radial(cx, cy, r * 0.62, r, 24, z)
+        d.dot(d.p(cx, cy, z), 1.8)
+
+    # columns under anything that floats, so the elevated pieces read as built
+    for (cx, cy, w, dp, z, h) in placed:
+        if z <= 0:
+            continue
+        for fx in (0.12, 0.5, 0.88):
+            for fy in (0.16, 0.84):
+                x, y = cx + w * fx, cy + dp * fy
+                d.seg(d.p(x, y, 0), d.p(x, y, z), 0.3)
+                d.dot(d.p(x, y, 0), 1.2, INK, 0.55)
+
+    # sine paths run *along* the band, threading the whole site
+    for (off, amp, wl, wid, dash) in ((-bw * 0.5, G * 0.5, span * 0.55, 0.5, None),
+                                      (-bw * 0.5, G * 0.16, span * 0.17, 0.28, None),
+                                      (bw * 0.6, G * 0.62, span * 0.7, 0.35, "4 5")):
+        pts = []
+        for k in range(121):
+            t = span * k / 120
+            pts.append(d.p(t, t + off + amp * math.sin(t / wl * 2 * math.pi)))
+        d.poly(pts, wid, close=False, dash=dash)
+
+    for _ in range(v["axisn"]):
+        t = rng.uniform(0, span)
+        x, y = t, t + rng.uniform(-bw, bw)
+        d.cross(d.p(x, y, 0), 5, 0.4, AXIS)
+        d.dot(d.p(x, y, 0), 1.4, AXIS, 0.8)
+
+    # long hairlines shooting along the axis, well past the site edges
+    for _ in range(v["rays"]):
+        off = rng.uniform(-bw * 1.4, bw * 1.4)
+        d.seg(d.p(-span * 0.3, -span * 0.3 + off, rec=False),
+              d.p(span * 1.3, span * 1.3 + off, rec=False),
+              0.25, op=0.45, dash="14 9")
+
+    return d
 
 
-def path(d, w=0.4, **kw):
-    add(f'<path d="{d}" stroke-width="{w}" {esc(**kw)}/>')
+def render(v, path):
+    d = build(v)
+    xs = [p[0] for p in d.pts]
+    ys = [p[1] for p in d.pts]
+    bw, bh = max(xs) - min(xs), max(ys) - min(ys)
+    s = min((SHEET_W - 2 * MARGIN) / bw, (SHEET_H - 2 * MARGIN) / bh) * v["zoom"]
+    tx = SHEET_W / 2 - (min(xs) + bw / 2) * s
+    ty = SHEET_H / 2 - (min(ys) + bh / 2) * s
+
+    out = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SHEET_W} {SHEET_H}" '
+           f'width="{SHEET_W}" height="{SHEET_H}">',
+           f'<!-- variant {v["name"]} — generated by gen-background.py -->',
+           f'<g transform="rotate({v["spin"]} {SHEET_W // 2} {SHEET_H // 2}) '
+           f'translate({tx:.1f} {ty:.1f}) scale({s:.4f})">']
+    out += d.parts
+    out.append('</g>')
+
+    out.append(f'<g fill="none" stroke="{INK}" stroke-linecap="butt">')
+    for (cx, cy, r, a0, a1, w) in v["arcs"]:
+        n = max(10, int(abs(a1 - a0) / 2))
+        pts = [(cx + r * math.cos(math.radians(a0 + (a1 - a0) * k / n)),
+                cy + r * math.sin(math.radians(a0 + (a1 - a0) * k / n)))
+               for k in range(n + 1)]
+        out.append('<path d="M' + "L".join(f"{x:.1f} {y:.1f}" for x, y in pts)
+                   + f'" stroke-width="{w:.1f}"/>')
+    for (x1, y1, x2, y2, w) in v["bolds"]:
+        out.append(f'<path d="M{x1:.0f} {y1:.0f}L{x2:.0f} {y2:.0f}" stroke-width="{w:.1f}"/>')
+    out.append('</g>')
+
+    for (x, y) in v["squares"]:
+        out.append(f'<rect x="{x:.0f}" y="{y:.0f}" width="14" height="14" fill="{ACCENT}"/>')
+    for (x, y, r) in v["circles"]:
+        out.append(f'<circle cx="{x:.0f}" cy="{y:.0f}" r="{r}" fill="none" '
+                   f'stroke="{ACCENT}" stroke-width="1.2"/>')
+
+    out.append('</svg>')
+    svg = "\n".join(out)
+    open(path, "w", encoding="utf-8").write(svg)
+    return len(svg)
 
 
-def circ(cx, cy, r, w=0.4, **kw):
-    add(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" stroke-width="{w}" {esc(**kw)}/>')
+# ===========================================================================
+AX = [30, 26, 34, 30, 22, 38, 28, 32]
+AY = [30, 34, 26, 22, 30, 24, 38, 28]
+SPIN = [0, -4, 5, -7, 3, -2, 7, -5]
+HATCH = [7, 9, 6, 8, 10, 7, 9, 6]
 
 
-def dot(cx, cy, r=1.8, op=1.0, fill=INK):
-    add(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r}" fill="{fill}" stroke="none" opacity="{op}"/>')
+def variant(i):
+    """Eight arrangements — angle, seed and layout all differ."""
+    rng = random.Random(1000 + i * 17)
+    G, n = 100, 9
+    span = n * G
+
+    # In this projection screen-x follows (x - y) and screen-y follows (x + y),
+    # so a site laid out on the diagonal projects tall — which is what a
+    # portrait sheet wants. Keep |a - b| small and let (a + b) run.
+    band = v_band = 2 + i % 2
+    cells = [(a, b) for a in range(n) for b in range(n) if abs(a - b) <= band]
+    rng.shuffle(cells)
+
+    slabs = []
+    for (a, b) in cells[: 15 + i % 4]:
+        sh = (rng.uniform(-64, 64), rng.uniform(-64, 64)) if rng.random() < 0.72 else None
+        slabs.append((a * G + rng.uniform(-16, 16), b * G + rng.uniform(-16, 16),
+                      rng.choice([80, 100, 130, 165]), rng.choice([70, 95, 125]),
+                      rng.choice([0, 0, 0, 28, 64]), rng.choice([0, 0, 24, 38, 58, 88]), sh))
+
+    def on_band():
+        a = rng.uniform(0, span)
+        return a, a + rng.uniform(-band * G, band * G)
+
+    stairs = []
+    for _ in range(5 + i % 3):
+        sx, sy = on_band()
+        stairs.append((sx, sy, rng.randint(7, 13), 10, rng.choice([30, 42, 54]), 6.5,
+                       rng.choice([0, 0, 28]), rng.choice(["x", "y"])))
+
+    walls = []
+    for _ in range(5):
+        x0, y0 = on_band()
+        ln, h = rng.uniform(80, 190), rng.choice([26, 44, 66])
+        walls.append((x0, y0, x0 + ln, y0, h, 0) if rng.random() < 0.5
+                     else (x0, y0, x0, y0 + ln, h, 0))
+
+    rings = []
+    for _ in range(3):
+        cx, cy = on_band()
+        rings.append((cx, cy, rng.choice([70, 95, 130]), 0))
+
+    # bold overlay marks — the cluster auto-fits to the sheet centre, so aim
+    # these at the middle and let them cut across it
+    arcs = []
+    for _ in range(2 + i % 2):
+        a0 = rng.uniform(0, 360)
+        arcs.append((rng.uniform(330, 570), rng.uniform(480, 940), rng.uniform(150, 290),
+                     a0, a0 + rng.uniform(100, 170), rng.uniform(2.4, 3.8)))
+    bolds = []
+    for _ in range(2):
+        x1, y1 = rng.uniform(250, 640), rng.uniform(400, 1000)
+        bolds.append((x1, y1, x1 + rng.uniform(-240, 240), y1 + rng.uniform(-260, 260),
+                      rng.uniform(2.2, 3.6)))
+
+    return {
+        "name": f"{i:02d}", "seed": 1000 + i * 17,
+        "ax": AX[i - 1], "ay": AY[i - 1], "spin": SPIN[i - 1], "hatch": HATCH[i - 1],
+        "zoom": 1.0, "grid": G, "gridn": n,
+        "slabs": slabs, "stairs": stairs, "walls": walls, "rings": rings,
+        "axisn": 10, "rays": 5, "band": band, "arcs": arcs, "bolds": bolds,
+        "squares": [(rng.uniform(120, 740), rng.uniform(180, 1180)) for _ in range(2)],
+        "circles": [(rng.uniform(200, 700), rng.uniform(300, 1100), 11)],
+    }
 
 
-def poly(pts, w=0.5, close=True, **kw):
-    d = "M" + "L".join(f"{x:.1f} {y:.1f}" for x, y in pts) + ("Z" if close else "")
-    path(d, w, **kw)
-
-
-def arc(cx, cy, r, a0, a1, w=0.4, **kw):
-    """Arc from a0 to a1 degrees, drawn as a polyline so widths stay honest."""
-    n = max(8, int(abs(a1 - a0) / 2))
-    pts = []
-    for k in range(n + 1):
-        a = math.radians(a0 + (a1 - a0) * k / n)
-        pts.append((cx + r * math.cos(a), cy + r * math.sin(a)))
-    poly(pts, w, close=False, **kw)
-
-
-def rot(p, a, o):
-    """Rotate point p by a degrees about origin o."""
-    ar = math.radians(a)
-    dx, dy = p[0] - o[0], p[1] - o[1]
-    return (o[0] + dx * math.cos(ar) - dy * math.sin(ar),
-            o[1] + dx * math.sin(ar) + dy * math.cos(ar))
-
-
-def plate(cx, cy, w_, h_, ang, hatch=0, hw=0.32, sw=0.6, hatch_ang=None):
-    """A thin roof plate: outline plus optional fine parallel grain."""
-    o = (cx, cy)
-    corners = [(cx - w_ / 2, cy - h_ / 2), (cx + w_ / 2, cy - h_ / 2),
-               (cx + w_ / 2, cy + h_ / 2), (cx - w_ / 2, cy + h_ / 2)]
-    poly([rot(p, ang, o) for p in corners], sw)
-    if hatch:
-        ha = ang if hatch_ang is None else hatch_ang
-        step = h_ / (hatch + 1)
-        for k in range(1, hatch + 1):
-            y = cy - h_ / 2 + k * step
-            p1 = rot((cx - w_ / 2 + 2, y), ang, o)
-            p2 = rot((cx + w_ / 2 - 2, y), ang, o)
-            if hatch_ang is not None:
-                p1 = rot(p1, ha - ang, o)
-                p2 = rot(p2, ha - ang, o)
-            line(*p1, *p2, hw)
-
-
-def comb(x, y, n, length, gap, ang, w=0.5):
-    """The little stair / ladder runs scattered through the drawing."""
-    o = (x, y)
-    for k in range(n):
-        p1 = rot((x, y + k * gap), ang, o)
-        p2 = rot((x + length, y + k * gap), ang, o)
-        line(*p1, *p2, w)
-    p1, p2 = rot((x, y), ang, o), rot((x, y + (n - 1) * gap), ang, o)
-    line(*p1, *p2, 0.35)
-    p1, p2 = rot((x + length, y), ang, o), rot((x + length, y + (n - 1) * gap), ang, o)
-    line(*p1, *p2, 0.35)
-
-
-def fan(x, y, r0, r1, a0, a1, n, w=0.3):
-    for k in range(n):
-        a = math.radians(a0 + (a1 - a0) * k / max(1, n - 1))
-        line(x + r0 * math.cos(a), y + r0 * math.sin(a),
-             x + r1 * math.cos(a), y + r1 * math.sin(a), w)
-
-
-def cross(x, y, s=7, w=0.5):
-    line(x - s, y, x + s, y, w)
-    line(x, y - s, x, y + s, w)
-
-
-add(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">')
-add('<!-- background drawing: brutalist complex, exploded on a diagonal -->')
-add(f'<g fill="none" stroke="{INK}" stroke-linecap="round">')
-
-# the whole composition sits on a diagonal axis, pulled in slightly so
-# nothing runs off the right edge of the sheet
-add('<g transform="rotate(-34 450 700) translate(450 700) scale(0.93) translate(-450 -700)">')
-
-# ================================================== faint construction layer
-add('<g opacity="0.3">')
-
-# site boundary — an irregular polygon of long straight runs
-SITE = [(120, 190), (470, 90), (742, 250), (800, 560), (690, 830),
-        (742, 1120), (520, 1290), (250, 1210), (110, 940), (170, 520)]
-poly(SITE, 0.35, stroke_dasharray="10 7")
-poly([(x * 0.82 + 80, y * 0.82 + 120) for x, y in SITE], 0.3, stroke_dasharray="3 6")
-
-# long lines radiating from a point well off the canvas
-VP = (-260, -180)
-for k in range(16):
-    a = math.radians(18 + k * 3.4)
-    line(VP[0], VP[1], VP[0] + 1900 * math.cos(a), VP[1] + 1900 * math.sin(a),
-         0.28, stroke_dasharray="14 9")
-
-# dotted construction circles
-for (cx, cy, r) in ((450, 700, 306), (368, 512, 190), (596, 918, 232), (430, 1080, 140)):
-    circ(cx, cy, r, 0.35, stroke_dasharray="2 7")
-
-# a couple of full hairline circles
-circ(450, 700, 232, 0.3)
-circ(596, 918, 148, 0.3)
-
-add('</g>')
-
-# ================================================= the fragments (hairline)
-# a loose cluster of plates drifting apart along the axis
-plate(392, 300, 210, 118, 6, hatch=9)
-plate(300, 470, 150, 250, -4, hatch=11)
-plate(548, 452, 132, 132, 45)
-plate(470, 640, 300, 96, 8, hatch=7)
-plate(360, 812, 168, 168, -2, hatch=6)
-plate(628, 800, 190, 104, 26, hatch=5)
-plate(470, 980, 244, 88, -6, hatch=6)
-plate(352, 1116, 178, 118, 10, hatch=5)
-plate(636, 1078, 120, 120, 45)
-
-# courtyard voids, drawn as simple inner outlines
-plate(392, 300, 96, 48, 6)
-plate(300, 470, 66, 108, -4)
-plate(360, 812, 72, 72, -2)
-
-# the stair combs
-comb(250, 356, 9, 62, 7, 18)
-comb(556, 566, 7, 48, 8, -30)
-comb(214, 640, 11, 54, 7, 4)
-comb(600, 700, 8, 44, 8, 62)
-comb(392, 906, 10, 58, 7, -14)
-comb(660, 962, 6, 40, 8, 34)
-comb(268, 1044, 8, 50, 7, 22)
-comb(508, 1178, 9, 56, 7, -8)
-
-# sprays of thin lines — the "shift" fans
-fan(450, 700, 40, 300, -120, -46, 13)
-fan(596, 918, 30, 210, 100, 168, 11)
-fan(300, 470, 24, 170, -20, 44, 9)
-
-# small drums
-for (cx, cy, r) in ((548, 452, 34), (360, 812, 26), (636, 1078, 22), (214, 900, 30)):
-    circ(cx, cy, r, 0.6)
-    circ(cx, cy, r * 0.42, 0.4)
-    dot(cx, cy, 1.6)
-
-# registration crosses
-for (x, y) in ((330, 244), (612, 386), (238, 742), (700, 880), (410, 1042), (556, 1250)):
-    cross(x, y, 7, 0.45)
-
-# ------------------------------------------------------------ sine elements
-def sine(y0, amp, wavelen, x0, x1, w=0.4, phase=0.0, dash=None):
-    pts = [(x0 + k, y0 + amp * math.sin(k / wavelen * 2 * math.pi + phase))
-           for k in range(x1 - x0 + 1)]
-    kw = {"stroke_dasharray": dash} if dash else {}
-    poly(pts, w, close=False, **kw)
-
-
-# long wavelengths — these should read as sweeping drawn curves, not as
-# a signal trace sitting on top of the plan
-sine(1252, 34, 620, 90, 830, 0.7)
-sine(1252, 11, 190, 90, 830, 0.3, phase=math.pi / 3)
-sine(198, 26, 700, 120, 800, 0.5, phase=math.pi)
-sine(902, 44, 760, 130, 790, 0.35, dash="3 6")
-
-# ===================================================== the bold black marks
-# a handful of heavy strokes doing all the contrast work
-add(f'<g stroke="{INK}" stroke-linecap="butt">')
-line(346, 402, 604, 690, 4.2)
-line(268, 968, 452, 1128, 3.4)
-line(590, 250, 668, 342, 2.8)
-
-arc(450, 700, 258, 104, 246, 4.4)
-arc(596, 918, 176, -66, 84, 3.8)
-arc(330, 470, 132, 122, 286, 3.0)
-arc(470, 1160, 150, -156, -36, 2.6)
-
-add('</g>')
-
-add('</g>')  # end diagonal rotation
-
-# ------------------------------------------------- outlier, in sheet coords
-# a fragment adrift in the empty top-right, tethered back to the complex by
-# long hairlines. placed outside the rotation so it lands exactly.
-add('<g opacity="0.45">')
-for (x1, y1) in ((452, 470), (486, 556), (398, 424)):
-    line(700, 236, x1, y1, 0.3, stroke_dasharray="13 8")
-add('</g>')
-add(f'<g stroke="{INK}" stroke-linecap="butt">')
-arc(700, 236, 96, 128, 292, 4.0)
-add('</g>')
-arc(700, 236, 118, 128, 292, 0.35, stroke_dasharray="2 7")
-cross(700, 236, 9, 0.5)
-comb(742, 150, 6, 42, 7, 28)
-
-add('</g>')  # end ink group
-
-# accents, left upright so they read as marks on the sheet rather than plan
-add('<rect x="176" y="252" width="15" height="15" fill="#d8402f"/>')
-add('<rect x="706" y="1096" width="15" height="15" fill="#d8402f"/>')
-
-add('</svg>')
-
-dest = "/Users/sawa/Desktop/cluadeCodeFolder/this222shallpass.github.io/images/bg-brutalist.svg"
-s = "\n".join(out)
-open(dest, "w", encoding="utf-8").write(s)
-print("wrote", dest, len(s) // 1024, "KB")
+if __name__ == "__main__":
+    here = os.path.dirname(os.path.abspath(__file__))
+    which = [int(sys.argv[1])] if len(sys.argv) > 1 else range(1, 9)
+    for i in which:
+        p = os.path.join(here, "images", f"bg-{i:02d}.svg")
+        print(f"bg-{i:02d}.svg  {render(variant(i), p) // 1024} KB")

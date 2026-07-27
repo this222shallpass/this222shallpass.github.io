@@ -4,8 +4,8 @@
    ------------------------------------------------------------------ */
 
 :root {
-  /* swap this one line to change the background drawing */
-  --bg-image: url("images/bg-brutalist.svg");
+  /* each page gets its own drawing — see the [data-page] rules below */
+  --bg-image: url("images/bg-01.svg");
 
   --paper: #fbfaf8;
   --ink: #111111;
@@ -56,6 +56,11 @@ html[lang="ja"] body {
   font-size: calc(var(--size) * var(--ja-scale));
 }
 
+/* one drawing per page. eight are generated; swap the numbers freely. */
+body[data-page="index"]   { --bg-image: url("images/bg-01.svg"); }
+body[data-page="profile"] { --bg-image: url("images/bg-04.svg"); }
+body[data-page="days"]    { --bg-image: url("images/bg-07.svg"); }
+
 /* ---- the background drawing ------------------------------------- */
 
 .bg {
@@ -67,7 +72,7 @@ html[lang="ja"] body {
   background-position: 68% 100%;
   background-size: auto 88%;
   opacity: 0.62;
-  filter: grayscale(1) contrast(0.9);
+  filter: contrast(0.92);
   mix-blend-mode: multiply;
   pointer-events: none;
 }

@@ -69,6 +69,7 @@
     });
 
     document.title = sheets[i].dataset.title || "acc8f1";
+    document.documentElement.setAttribute("data-page", current);
 
     if (animate) {
       window.setTimeout(function () {

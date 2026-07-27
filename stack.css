@@ -6,7 +6,7 @@
    ------------------------------------------------------------------ */
 
 :root {
-  --bg-image: url("images/bg-brutalist.svg");
+  --bg-image: url("images/bg-01.svg");
 
   --paper: #fbfaf8;
   --ink: #111111;
@@ -59,6 +59,12 @@ html[lang="ja"] body {
   font-size: calc(var(--size) * var(--ja-scale));
 }
 
+/* the drawing changes with the sheet on top, so shuffling the deck
+   shuffles the background too */
+html[data-page="index"]   { --bg-image: url("images/bg-01.svg"); }
+html[data-page="profile"] { --bg-image: url("images/bg-04.svg"); }
+html[data-page="days"]    { --bg-image: url("images/bg-07.svg"); }
+
 /* ---- the ink drawing: bottom-most sheet in the stack -------------- */
 
 .bg {
@@ -70,7 +76,7 @@ html[lang="ja"] body {
   background-position: 68% 100%;
   background-size: auto 88%;
   opacity: 0.52;
-  filter: grayscale(1) contrast(0.9);
+  filter: contrast(0.92);
   mix-blend-mode: multiply;
   pointer-events: none;
 }
