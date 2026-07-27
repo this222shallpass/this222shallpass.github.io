@@ -174,16 +174,18 @@ nav a[aria-current="page"] { border-bottom-color: var(--ink); color: var(--ink);
 .sheet[data-depth="1"] {
   z-index: 5;
   transform: translate(26px, 20px) rotate(-0.7deg) scale(0.985);
-  opacity: 0.2;
-  filter: blur(0.35px);
+  opacity: 0.22;
+  /* enough blur that the words stop being readable — half-legible text
+     underneath pulls the eye far harder than a soft grey mass does */
+  filter: blur(1.4px);
   pointer-events: none;
 }
 
 .sheet[data-depth="2"] {
   z-index: 1;
   transform: translate(54px, 40px) rotate(1deg) scale(0.968);
-  opacity: 0.12;
-  filter: blur(0.8px);
+  opacity: 0.14;
+  filter: blur(2.4px);
   pointer-events: none;
 }
 
@@ -303,8 +305,8 @@ footer .mark { color: var(--accent); }
      one, push it clear of the text column, and bury the other entirely. */
   .sheet[data-depth="1"] {
     transform: translate(34px, 26px) rotate(-0.6deg) scale(0.99);
-    opacity: 0.09;
-    filter: blur(0.5px);
+    opacity: 0.11;
+    filter: blur(1.2px);
   }
   .sheet[data-depth="2"] { opacity: 0; }
 
