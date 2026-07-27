@@ -5,7 +5,7 @@
 
 :root {
   /* swap this one line to change the background drawing */
-  --bg-image: url("images/bg-placeholder.svg");
+  --bg-image: url("images/bg-brutalist.svg");
 
   --paper: #fbfaf8;
   --ink: #111111;
@@ -66,7 +66,7 @@ html[lang="ja"] body {
   background-repeat: no-repeat;
   background-position: 68% 100%;
   background-size: auto 88%;
-  opacity: 0.5;
+  opacity: 0.62;
   filter: grayscale(1) contrast(0.9);
   mix-blend-mode: multiply;
   pointer-events: none;
@@ -253,7 +253,7 @@ footer .mark { color: var(--accent); }
   .bg {
     background-position: 55% 100%;
     background-size: auto 62%;
-    opacity: 0.32;
+    opacity: 0.42;
   }
 
   header { margin-bottom: 24px; }

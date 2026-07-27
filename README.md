@@ -38,7 +38,7 @@ Full-size originals live outside the repo in `../day-originals/`.
 
 ## Swapping the background
 
-Replace `images/bg-placeholder.svg` with your own file, then change the one line
+Replace `images/bg-brutalist.svg` with your own file, then change the one line
 at the top of `style.css`:
 
 ```css
