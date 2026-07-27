@@ -1,0 +1,322 @@
+/* ------------------------------------------------------------------
+   acc8f1 — stacked-sheet variant.
+   all three pages live in the dom at once. the active one is on top
+   and in flow; the others sit underneath, offset and rotated, so the
+   background of every page is the rest of the site.
+   ------------------------------------------------------------------ */
+
+:root {
+  --bg-image: url("images/bg-placeholder.svg");
+
+  --paper: #fbfaf8;
+  --ink: #111111;
+  --ink-soft: #6b6b6b;
+  --rule: #d8d5cf;
+  --accent: #d8402f;
+
+  --size: 12.5px;
+  --lead: 1.45;
+  --gap: 22px;
+
+  /* the shuffle */
+  --ease: cubic-bezier(0.22, 0.68, 0.16, 1);
+  --dur: 420ms;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; overflow-x: hidden; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: var(--size);
+  line-height: var(--lead);
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding: var(--gap);
+  padding-bottom: 90px;
+  overflow-x: hidden; /* the offset sheets stick out to the right */
+}
+
+html[lang="ja"] body {
+  font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Helvetica Neue", sans-serif;
+  line-height: 1.7;
+}
+
+/* ---- the ink drawing: bottom-most sheet in the stack -------------- */
+
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--bg-image);
+  background-repeat: no-repeat;
+  background-position: 68% 100%;
+  background-size: auto 88%;
+  opacity: 0.38;
+  filter: grayscale(1) contrast(0.9);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* ---- links, headings, shared bits --------------------------------- */
+
+a { color: inherit; text-decoration: none; border-bottom: 1px solid transparent; }
+a:hover { border-bottom-color: var(--ink); }
+
+.arrow::before {
+  content: "↗";
+  display: inline-block;
+  margin-right: 5px;
+  font-size: 0.9em;
+}
+
+h1 {
+  font-size: var(--size);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0 0 4px;
+}
+
+h2 {
+  font-size: var(--size);
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0 0 0.5em;
+}
+
+p { margin: 0 0 0.9em; max-width: 34em; }
+
+/* ---- language toggle ---------------------------------------------- */
+
+#lang {
+  position: fixed;
+  top: var(--gap);
+  right: var(--gap);
+  z-index: 30;
+  font: inherit;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  padding: 3px 11px 4px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+}
+#lang:hover { background: var(--ink); color: var(--paper); }
+
+html[lang="en"] .ja,
+html[lang="ja"] .en { display: none !important; }
+
+/* ---- masthead + nav (outside the deck, never shuffles) ------------- */
+
+header {
+  position: relative;
+  z-index: 20;
+  margin-bottom: 30px;
+}
+
+nav { margin-top: 3px; color: var(--ink-soft); }
+nav a { margin-right: 14px; }
+nav a[aria-current="page"] { border-bottom-color: var(--ink); color: var(--ink); }
+
+/* ---- the deck ------------------------------------------------------ */
+
+.deck { position: relative; }
+
+.sheet {
+  /* inactive sheets are lifted out of flow and pushed back */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  transform-origin: 12% 0%;
+  transition:
+    transform var(--dur) var(--ease),
+    opacity var(--dur) var(--ease),
+    filter var(--dur) var(--ease);
+}
+
+/* the active sheet stays in flow, so it sets the page height */
+.sheet.is-active {
+  position: relative;
+  z-index: 10;
+  transform: none;
+  opacity: 1;
+  filter: none;
+  pointer-events: auto;
+}
+
+.sheet[data-depth="1"] {
+  z-index: 5;
+  transform: translate(26px, 20px) rotate(-0.7deg) scale(0.985);
+  opacity: 0.2;
+  filter: blur(0.35px);
+  pointer-events: none;
+}
+
+.sheet[data-depth="2"] {
+  z-index: 1;
+  transform: translate(54px, 40px) rotate(1deg) scale(0.968);
+  opacity: 0.12;
+  filter: blur(0.8px);
+  pointer-events: none;
+}
+
+/* mid-shuffle the outgoing sheet lifts before it settles */
+.sheet.is-leaving { z-index: 8; }
+
+/* ---- page content -------------------------------------------------- */
+
+.cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 40px;
+  max-width: 1100px;
+}
+
+.col > * + * { margin-top: 1.6em; }
+
+ol.index { list-style: none; margin: 0; padding: 0; }
+ol.index li { display: flex; gap: 10px; }
+ol.index .n {
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+
+dl.meta {
+  display: grid;
+  grid-template-columns: 6.5em minmax(0, 1fr);
+  gap: 2px 12px;
+  margin: 0;
+}
+dl.meta dt { color: var(--ink-soft); }
+dl.meta dd { margin: 0; overflow-wrap: anywhere; }
+
+/* ---- days ---------------------------------------------------------- */
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 26px 22px;
+  max-width: 1100px;
+  margin-top: 6px;
+}
+
+.days figure { margin: 0; }
+.days a { border-bottom: none; display: block; }
+
+.days img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: grayscale(1) contrast(0.95);
+  transition: filter 0.25s ease, opacity var(--dur) var(--ease);
+}
+.days a:hover img { filter: none; }
+
+.days figcaption {
+  margin-top: 6px;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.days figcaption .note { color: var(--ink); display: block; }
+
+/* underneath, the photos would read as grey slabs — so drop them to
+   empty frames and keep only the outline and the date */
+.sheet:not(.is-active) .days a {
+  outline: 1px solid var(--ink-soft);
+  outline-offset: 0;
+}
+.sheet:not(.is-active) .days img { opacity: 0; }
+
+.empty { color: var(--ink-soft); }
+
+/* ---- footer -------------------------------------------------------- */
+
+footer {
+  position: fixed;
+  left: var(--gap);
+  right: var(--gap);
+  bottom: 14px;
+  z-index: 20;
+  padding-top: 8px;
+  border-top: 1px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink-soft);
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+footer .mark { color: var(--accent); }
+
+/* ---- narrow desktop ------------------------------------------------ */
+
+@media (max-width: 1000px) and (min-width: 721px) {
+  .cols { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px; }
+}
+
+/* ---- mobile --------------------------------------------------------- */
+
+@media (max-width: 720px) {
+  :root { --size: 13.5px; --gap: 16px; }
+
+  body { padding-bottom: 72px; }
+
+  .cols { grid-template-columns: 1fr; gap: 26px; }
+  .col + .col { border-top: 1px solid var(--rule); padding-top: 22px; }
+
+  .bg {
+    background-position: 55% 100%;
+    background-size: auto 62%;
+    opacity: 0.3;
+  }
+
+  /* a phone is one dense column — two sheets of ghost text underneath it
+     stops reading as paper and starts reading as a printing fault. keep
+     one, push it clear of the text column, and bury the other entirely. */
+  .sheet[data-depth="1"] {
+    transform: translate(34px, 26px) rotate(-0.6deg) scale(0.99);
+    opacity: 0.09;
+    filter: blur(0.5px);
+  }
+  .sheet[data-depth="2"] { opacity: 0; }
+
+  header { margin-bottom: 24px; }
+  h1 { margin-bottom: 6px; }
+  nav a { margin-right: 12px; line-height: 2; }
+
+  #lang { top: auto; bottom: 12px; right: var(--gap); padding: 5px 13px 6px; }
+
+  footer { position: static; margin-top: 40px; display: block; }
+
+  .days { grid-template-columns: repeat(2, 1fr); gap: 18px 12px; }
+  dl.meta { grid-template-columns: 1fr; }
+  dl.meta dt { margin-top: 8px; }
+}
+
+@media (max-width: 330px) {
+  .days { grid-template-columns: 1fr; }
+}
+
+/* ---- no js: lay the sheets out normally instead of stacking -------- */
+
+.no-js .sheet {
+  position: relative;
+  transform: none;
+  opacity: 1;
+  filter: none;
+  pointer-events: auto;
+  margin-bottom: 40px;
+}
+
+/* ---- reduced motion ------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet { transition: opacity 1ms linear; }
+}
