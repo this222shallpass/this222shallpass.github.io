@@ -76,7 +76,8 @@ html[data-page="days"]    { --bg-image: url("images/bg-07.svg"); }
   background-position: 68% 100%;
   background-size: auto 88%;
   opacity: 0.52;
-  filter: contrast(0.92);
+  /* softened so the drawing stays scenery and the text stays the subject */
+  filter: blur(1.5px) contrast(0.92);
   mix-blend-mode: multiply;
   pointer-events: none;
 }
@@ -294,6 +295,7 @@ footer .mark { color: var(--accent); }
     background-position: 55% 100%;
     background-size: auto 62%;
     opacity: 0.4;
+    filter: blur(1.1px) contrast(0.92);
   }
 
   /* a phone is one dense column — two sheets of ghost text underneath it
