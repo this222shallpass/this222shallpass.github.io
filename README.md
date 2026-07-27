@@ -25,6 +25,17 @@ images/
 
 `en` and `ja` are optional — delete either key to leave it out. Newest first.
 
+Resize before committing. The grid never shows an image wider than ~250px, and
+git keeps every version of a binary forever, so a few MB per day adds up fast and
+cannot be taken back out. 1600px on the long edge as WebP q92 is the current
+setting — that put the first six days at ~70 KB each instead of ~4.5 MB:
+
+```bash
+python3 -c 'from PIL import Image;import sys;i=Image.open(sys.argv[1]).convert("RGB");s=1600/max(i.size);i=i.resize([round(d*s) for d in i.size],Image.LANCZOS) if s<1 else i;i.save(sys.argv[2],quality=92,method=6)' in.png images/days/out.webp
+```
+
+Full-size originals live outside the repo in `../day-originals/`.
+
 ## Swapping the background
 
 Replace `images/bg-placeholder.svg` with your own file, then change the one line
