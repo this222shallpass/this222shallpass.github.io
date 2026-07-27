@@ -296,16 +296,31 @@ footer .mark { color: var(--accent); }
 @media (max-width: 720px) {
   :root { --size: 13.5px; --gap: 16px; }
 
-  body { padding-bottom: 72px; }
+  /* column layout: header, then the deck taking whatever is left, then the
+     footer — so a short page still puts the footer on the bottom edge */
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;   /* dvh accounts for the phone's address bar */
+    padding-bottom: var(--gap);
+  }
 
   .cols { grid-template-columns: 1fr; gap: 26px; }
   .col + .col { border-top: 1px solid var(--rule); padding-top: 22px; }
 
-  .bg {
-    background-position: 55% 100%;
-    background-size: auto 62%;
-    opacity: 0.4;
-    filter: blur(1.1px) contrast(0.92);
+  /* no ink drawing on a phone. a fixed, full-viewport layer carrying both a
+     blur and mix-blend-mode has to be recomposited on every scroll frame,
+     which is what made scrolling stutter — and the sheets underneath are
+     background enough on a small screen. */
+  .bg { display: none; }
+
+  /* the deck fills the space between header and footer, and clips: the
+     buried sheets are absolutely positioned, so without this they overflow
+     the page and add a screenful of blank scroll below the content. */
+  .deck {
+    flex: 1 0 auto;
+    overflow: clip;
   }
 
   /* a phone is one dense column — two sheets of ghost text underneath it
@@ -322,9 +337,12 @@ footer .mark { color: var(--accent); }
   h1 { margin-bottom: 6px; }
   nav a { margin-right: 12px; line-height: 2; }
 
-  #lang { top: auto; bottom: 12px; right: var(--gap); }
+  /* sits on the footer line, opposite the mark, so the two read as one bar */
+  #lang { top: auto; bottom: var(--gap); right: var(--gap); }
 
-  footer { position: static; margin-top: 40px; display: block; }
+  /* the deck already absorbs the slack, so no top margin is needed to push
+     the footer down — it sits on the bottom edge either way */
+  footer { position: static; margin-top: 0; display: flex; }
 
   .days { grid-template-columns: repeat(2, 1fr); gap: 18px 12px; }
   dl.meta { grid-template-columns: 1fr; }
