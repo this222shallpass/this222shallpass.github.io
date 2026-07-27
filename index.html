@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>acc8f1</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="stack.css">
 <script>try{document.documentElement.lang=localStorage.getItem("lang")||"en"}catch(e){}</script>
 </head>
-<body data-page="index">
+<body>
 
 <div class="bg"></div>
 <button id="lang" type="button">日本語</button>
@@ -15,59 +15,110 @@
 <header>
   <h1>acc8f1</h1>
   <nav>
-    <a href="index.html" aria-current="page"><span class="en">Index</span><span class="ja">インデックス</span></a>
-    <a href="profile.html"><span class="en">Profile</span><span class="ja">プロフィール</span></a>
-    <a href="days.html"><span class="en">Days</span><span class="ja">日々</span></a>
+    <a href="#index"><span class="en">Index</span><span class="ja">インデックス</span></a>
+    <a href="#profile"><span class="en">Profile</span><span class="ja">プロフィール</span></a>
+    <a href="#days"><span class="en">Days</span><span class="ja">日々</span></a>
   </nav>
 </header>
 
-<main class="cols">
+<main class="deck">
 
-  <!-- ---------- column 1 : statement + contact ---------- -->
-  <section class="col">
-    <div>
-      <p class="en">Audio / software development.</p>
-      <p class="ja">音響 / ソフトウェア開発。</p>
-    </div>
+  <!-- =============== sheet 1 : index =============== -->
+  <section class="sheet" data-page="index" data-title="acc8f1">
+    <div class="cols">
+      <div class="col">
+        <div>
+          <p class="en">Audio / software development.</p>
+          <p class="ja">音響 / ソフトウェア開発。</p>
+        </div>
+        <div>
+          <p>
+            <a href="mailto:signedfrequency@gmail.com">signedfrequency@gmail.com</a><br>
+            @acc8f1
+          </p>
+        </div>
+      </div>
 
-    <div>
-      <p>
-        <a href="mailto:signedfrequency@gmail.com">signedfrequency@gmail.com</a><br>
-        @acc8f1
-      </p>
+      <div class="col wip">
+        <h2><span class="en">Works</span><span class="ja">作品</span></h2>
+        <ol class="index">
+          <li><span class="n">01</span><span class="en">Placeholder title (2026 — Ongoing)</span><span class="ja">仮のタイトル（2026 — 継続中）</span></li>
+          <li><span class="n">02</span><span class="en">Placeholder title (2026)</span><span class="ja">仮のタイトル（2026）</span></li>
+          <li><span class="n">03</span><span class="en">Placeholder title (2025)</span><span class="ja">仮のタイトル（2025）</span></li>
+          <li><span class="n">04</span><span class="en">Placeholder title (2025)</span><span class="ja">仮のタイトル（2025）</span></li>
+          <li><span class="n">05</span><span class="en">Placeholder title (2024)</span><span class="ja">仮のタイトル（2024）</span></li>
+          <li><span class="n">06</span><span class="en">Placeholder title (2024)</span><span class="ja">仮のタイトル（2024）</span></li>
+        </ol>
+      </div>
+
+      <div class="col wip">
+        <div>
+          <h2><span class="en">Notes</span><span class="ja">ノート</span></h2>
+          <p class="en">Placeholder. Releases, writing, or anything else that does
+          not belong in the list on the left.</p>
+          <p class="ja">プレースホルダー。リリース、テキスト、そのほか左のリストに入らないもの。</p>
+        </div>
+        <div>
+          <h2><span class="en">Elsewhere</span><span class="ja">リンク</span></h2>
+          <p>
+            <a class="arrow" href="#">Bandcamp</a><br>
+            <a class="arrow" href="#">SoundCloud</a><br>
+            <a class="arrow" href="#">Instagram</a>
+          </p>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- ---------- column 2 : index of works ---------- -->
-  <section class="col wip">
-    <h2><span class="en">Works</span><span class="ja">作品</span></h2>
-    <ol class="index">
-      <li><span class="n">01</span><span class="en">Placeholder title (2026 — Ongoing)</span><span class="ja">仮のタイトル（2026 — 継続中）</span></li>
-      <li><span class="n">02</span><span class="en">Placeholder title (2026)</span><span class="ja">仮のタイトル（2026）</span></li>
-      <li><span class="n">03</span><span class="en">Placeholder title (2025)</span><span class="ja">仮のタイトル（2025）</span></li>
-      <li><span class="n">04</span><span class="en">Placeholder title (2025)</span><span class="ja">仮のタイトル（2025）</span></li>
-      <li><span class="n">05</span><span class="en">Placeholder title (2024)</span><span class="ja">仮のタイトル（2024）</span></li>
-      <li><span class="n">06</span><span class="en">Placeholder title (2024)</span><span class="ja">仮のタイトル（2024）</span></li>
-    </ol>
+  <!-- =============== sheet 2 : profile =============== -->
+  <section class="sheet" data-page="profile" data-title="acc8f1 — Profile">
+    <div class="cols">
+      <div class="col">
+        <h2><span class="en">About</span><span class="ja">について</span></h2>
+        <div>
+          <p class="en">Audio / software development.</p>
+          <p class="en">Music DSP, game audio, installation work, AV / realtime.</p>
+          <p class="ja">音響 / ソフトウェア開発。</p>
+          <p class="ja">音楽 DSP、ゲームオーディオ、インスタレーション、AV / リアルタイム。</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="wip">
+          <h2><span class="en">Selected</span><span class="ja">主な活動</span></h2>
+          <p class="en">Placeholder — 2026, City<br>
+          Placeholder — 2025, City<br>
+          Placeholder — 2025, City<br>
+          Placeholder — 2024, City</p>
+          <p class="ja">プレースホルダー — 2026年、都市<br>
+          プレースホルダー — 2025年、都市<br>
+          プレースホルダー — 2025年、都市<br>
+          プレースホルダー — 2024年、都市</p>
+        </div>
+        <div>
+          <h2><span class="en">Tools</span><span class="ja">道具</span></h2>
+          <p class="en">Software development, DAW, Max/MSP, TouchDesigner, Wwise,
+          instrumental work.</p>
+          <p class="ja">ソフトウェア開発、DAW、Max/MSP、TouchDesigner、Wwise、楽器演奏・作曲。</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <h2><span class="en">Contact</span><span class="ja">連絡先</span></h2>
+        <dl class="meta">
+          <dt><span class="en">Mail</span><span class="ja">メール</span></dt>
+          <dd><a href="mailto:signedfrequency@gmail.com">signedfrequency@gmail.com</a></dd>
+
+          <dt><span class="en">Based in</span><span class="ja">拠点</span></dt>
+          <dd>EU / JP</dd>
+        </dl>
+      </div>
+    </div>
   </section>
 
-  <!-- ---------- column 3 : notes ---------- -->
-  <section class="col wip">
-    <div>
-      <h2><span class="en">Notes</span><span class="ja">ノート</span></h2>
-      <p class="en">Placeholder. Releases, writing, or anything else that does not
-      belong in the list on the left.</p>
-      <p class="ja">プレースホルダー。リリース、テキスト、そのほか左のリストに入らないもの。</p>
-    </div>
-
-    <div>
-      <h2><span class="en">Elsewhere</span><span class="ja">リンク</span></h2>
-      <p>
-        <a class="arrow" href="#">Bandcamp</a><br>
-        <a class="arrow" href="#">SoundCloud</a><br>
-        <a class="arrow" href="#">Instagram</a>
-      </p>
-    </div>
+  <!-- =============== sheet 3 : days =============== -->
+  <section class="sheet" data-page="days" data-title="acc8f1 — Days">
+    <div class="days" id="days-grid"></div>
   </section>
 
 </main>
@@ -76,6 +127,7 @@
   <span class="mark">■</span>
 </footer>
 
-<script src="site.js"></script>
+<script src="days.js"></script>
+<script src="stack.js"></script>
 </body>
 </html>

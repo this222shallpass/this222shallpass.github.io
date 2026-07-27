@@ -2,17 +2,31 @@
 
 Static artist page. No build step, no dependencies — plain HTML/CSS and ~50 lines of JS.
 
+Two versions of the same site live here. `index.html` is the live one — all
+three pages stacked as translucent sheets, the active one on top, navigated by
+hash. The flat multi-page version is kept alongside it.
+
 ```
-index.html      landing / index of works
-profile.html    about
-days.html       day tracking, reads days.js
-style.css       everything visual, one file
-site.js         language toggle + days rendering
-days.js         the list of day images  ← the only file you touch to post
+index.html          THE SITE — all three pages as a stack of sheets
+  stack.css         its styles
+  stack.js          sheet shuffling + language toggle
+
+index-alt.html      flat version: landing page
+profile.html        flat version: about
+days.html           flat version: day tracking
+  style.css         their styles
+  site.js           language toggle + days rendering
+
+days.js             the list of day images  ← the only file you touch to post
+gen-background.py   regenerates the eight background drawings
 images/
-  bg-placeholder.svg   background drawing
-  days/                day images
+  bg-01…08.svg      background drawings
+  days/             day images
 ```
+
+Both versions carry the same copy, so **edits have to be made in both places** —
+`index.html` holds all three pages as `<section class="sheet">`, and the flat
+version splits them across three files.
 
 ## Posting a day
 
