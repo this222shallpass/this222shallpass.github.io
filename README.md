@@ -30,25 +30,28 @@ version splits them across three files.
 
 ## Posting a day
 
-1. Drop the image into `images/days/`
-2. Add one line at the **top** of the list in `days.js`:
-
-```js
-{ file: "2026-07-28.jpg", date: "2026.07.28", en: "note", ja: "メモ" },
-```
-
-`en` and `ja` are optional — delete either key to leave it out. Newest first.
-
-Resize before committing. The grid never shows an image wider than ~250px, and
-git keeps every version of a binary forever, so a few MB per day adds up fast and
-cannot be taken back out. 1600px on the long edge as WebP q92 is the current
-setting — that put the first six days at ~70 KB each instead of ~4.5 MB:
+Drop full-size images into `images/days/`, named by date (`2026-10-04.png`), then:
 
 ```bash
-python3 -c 'from PIL import Image;import sys;i=Image.open(sys.argv[1]).convert("RGB");s=1600/max(i.size);i=i.resize([round(d*s) for d in i.size],Image.LANCZOS) if s<1 else i;i.save(sys.argv[2],quality=92,method=6)' in.png images/days/out.webp
+python3 make-days.py
 ```
 
-Full-size originals live outside the repo in `../day-originals/`.
+That resizes each to 1600px WebP, moves the original out to `../day-originals/`
+(outside the repo, because git keeps binaries forever), builds a 400px thumbnail
+into `images/days/thumbs/`, and rebuilds `days.js` from whatever is on disk,
+newest first. Safe to re-run; with nothing new it just refreshes thumbnails and
+the list.
+
+`days.js` is generated — edit it only to add `en` / `ja` caption keys, and know
+that re-running the script will drop them. Dates come from the filenames.
+
+### Why thumbnails
+
+The days page is a contact sheet: every plate on screen at once. It loads the
+thumbnails, not the full images — about 3 KB each against 75 KB, so 69 days cost
+roughly 180 KB instead of 5 MB. The full image is fetched only when a plate is
+clicked. This is what keeps the page flat as the archive grows; without it the
+page weight climbs by about 2 MB a month.
 
 ## Backgrounds
 

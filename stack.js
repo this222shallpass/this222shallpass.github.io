@@ -105,11 +105,12 @@
   }
 
   grid.innerHTML = DAYS.map(function (d) {
-    var src = "images/days/" + d.file;
+    var full = "images/days/" + d.file;
+    var thumb = "images/days/thumbs/" + d.file;
     return (
       "<figure>" +
-        '<a href="' + src + '">' +
-          '<img src="' + src + '" alt="' + d.date + '" loading="lazy">' +
+        '<a href="' + full + '">' +
+          '<img src="' + thumb + '" alt="' + d.date + '" loading="lazy">' +
         "</a>" +
         "<figcaption>" +
           (d.en ? '<span class="note en">' + d.en + "</span>" : "") +

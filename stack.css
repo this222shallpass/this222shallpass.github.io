@@ -230,10 +230,13 @@ dl.meta dd { margin: 0; overflow-wrap: anywhere; }
 
 /* ---- days ---------------------------------------------------------- */
 
+/* a contact sheet, not a gallery: small plates, dense, the whole archive
+   on roughly one screen. the grid shows thumbnails — the link behind each
+   one goes to the full-size image. */
 .days {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 26px 22px;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 13px 9px;
   max-width: 1100px;
   margin-top: 6px;
 }
@@ -251,9 +254,11 @@ dl.meta dd { margin: 0; overflow-wrap: anywhere; }
 .days a:hover img { filter: none; }
 
 .days figcaption {
-  margin-top: 6px;
+  margin-top: 4px;
   color: var(--ink-soft);
   font-variant-numeric: tabular-nums;
+  font-size: 0.85em;
+  letter-spacing: 0;
 }
 .days figcaption .note { color: var(--ink); display: block; }
 
@@ -344,13 +349,9 @@ footer .mark { color: var(--accent); }
      the footer down — it sits on the bottom edge either way */
   footer { position: static; margin-top: 0; display: flex; }
 
-  .days { grid-template-columns: repeat(2, 1fr); gap: 18px 12px; }
+  .days { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 11px 8px; }
   dl.meta { grid-template-columns: 1fr; }
   dl.meta dt { margin-top: 8px; }
-}
-
-@media (max-width: 330px) {
-  .days { grid-template-columns: 1fr; }
 }
 
 /* ---- no js: lay the sheets out normally instead of stacking -------- */
